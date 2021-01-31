@@ -672,6 +672,18 @@ def test_jsondatahandler_ohlcv_purge(mocker, testdatadir):
     assert unlinkmock.call_count == 1
 
 
+def test_jsondatahandler_ohlcv_load(testdatadir, caplog):
+    dh = JsonDataHandler(testdatadir)
+    df = dh.ohlcv_load('XRP/ETH', '5m')
+    assert len(df) == 711
+
+    # Failure case (empty array)
+    df1 = dh.ohlcv_load('NOPAIR/XXX', '4m')
+    assert len(df1) == 0
+    assert log_has("Could not load data for NOPAIR/XXX.", caplog)
+    assert df.columns.equals(df1.columns)
+
+
 def test_jsondatahandler_trades_load(testdatadir, caplog):
     dh = JsonGzDataHandler(testdatadir)
     logmsg = "Old trades format detected - converting"
